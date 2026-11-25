@@ -1,0 +1,4 @@
+pin_min_length=6
+pin_max_length=12
+pin_lockout_max_attempts=5
+pinutil_path=/usr/bin/pinutil

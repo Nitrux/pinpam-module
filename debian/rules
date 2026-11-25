@@ -1,0 +1,15 @@
+#!/usr/bin/make -f
+
+include /usr/share/dpkg/architecture.mk
+pkgdir = debian/pinpam-module
+
+%:
+	dh $@ --buildsystem=none
+
+override_dh_auto_build:
+	cargo build --locked --release --target-dir target -p pinpam-pam -p pinutil
+
+override_dh_auto_install:
+	install -Dm755 target/release/pinutil $(pkgdir)/usr/bin/pinutil
+	install -Dm644 target/release/libpinpam.so $(pkgdir)/usr/lib/$(DEB_HOST_MULTIARCH)/security/libpinpam.so
+	install -Dm644 debian/pinpam.policy $(pkgdir)/etc/pinpam/policy

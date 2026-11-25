@@ -1,0 +1,17 @@
+Source: pinpam-module
+Section: admin
+Priority: optional
+Maintainer: Uri Herrera <uri_herrera@nxos.org>
+Build-Depends: debhelper-compat (= 13), cargo, libclang-dev, libpam0g-dev, libssl-dev, libtss2-dev, pkg-config
+Standards-Version: 4.7.0
+Homepage: https://github.com/RazeLighter777/pinpam
+Vcs-Git: https://github.com/Nitrux/pinpam-module.git
+Vcs-Browser: https://github.com/Nitrux/pinpam-module
+Rules-Requires-Root: no
+
+Package: pinpam-module
+Architecture: amd64 arm64
+Depends: ${shlibs:Depends}, ${misc:Depends}, tpm-udev, libtss2-tcti-device0t64
+Description: TPM-backed PIN authentication for PAM
+ Provides the pinpam authentication module and the pinutil utility for
+ enrolling and managing per-user PINs.

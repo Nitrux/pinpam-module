@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+
+if [ "$1" = configure ] && ! dpkg-statoverride --list /usr/bin/pinutil >/dev/null; then
+    chown root:tss /usr/bin/pinutil
+    chmod 2755 /usr/bin/pinutil
+fi
+
+#DEBHELPER#
