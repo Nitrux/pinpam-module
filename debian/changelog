@@ -1,3 +1,9 @@
+pinpam-module (0.0.5+git1c22a94-2) unstable; urgency=medium
+
+  * Build both architectures against the Nitrux Debian snapshot before uploading to PackageCloud.
+
+ -- Uri Herrera <uri_herrera@nxos.org>  Wed, 25 Nov 2026 04:56:29 -0600
+
 pinpam-module (0.0.5+git1c22a94-1) unstable; urgency=medium
 
   * Package the TPM PIN authentication module, pinutil and the Nitrux PIN policy.

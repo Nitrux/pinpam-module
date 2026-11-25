@@ -1,4 +1,4 @@
-name: Build pinpam-module
+name: Build and push packages to PackageCloud.
 
 on:
   workflow_dispatch:
@@ -11,26 +11,75 @@ permissions:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        runner: [ubuntu-24.04, ubuntu-24.04-arm]
-    runs-on: ${{ matrix.runner }}
-    container: debian:testing
+    runs-on: ubuntu-24.04
+    container: debian:testing-20260713-slim
+    env:
+      DEBIAN_FRONTEND: noninteractive
     steps:
-      - name: Install packaging tools
+      - name: Configure Debian snapshot
         run: |
           apt-get update
-          apt-get install -y --no-install-recommends ca-certificates git build-essential debhelper equivs devscripts fakeroot
+          apt-get install -y --no-install-recommends ca-certificates
+          cat > /etc/apt/sources.list.d/debian.sources <<'EOF_SOURCES'
+          Types: deb
+          URIs: https://snapshot.debian.org/archive/debian/20261105T143010Z
+          Suites: testing
+          Components: main
+          Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+          Check-Valid-Until: no
+          EOF_SOURCES
+          apt-get update
+          apt-get -y dist-upgrade
+          apt-get install -y --no-install-recommends ruby-dev
+
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Build Debian package
+
+      - name: Build package
+        run: ./gh-build.sh
+
+      - name: Install PackageCloud client
+        run: gem install --no-document package_cloud
+
+      - name: Push package
+        env:
+          PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
+        run: package_cloud push nitrux/testing/debian/duke ./pinpam-module_*.deb
+
+  build-arm64:
+    runs-on: ubuntu-24.04-arm
+    container: debian:testing-20260713-slim
+    env:
+      DEBIAN_FRONTEND: noninteractive
+    steps:
+      - name: Configure Debian snapshot
         run: |
-          mk-build-deps --install --remove --tool 'apt-get -y --no-install-recommends' debian/control
-          dpkg-parsechangelog -l debian/changelog >/dev/null
-          ./gh-build.sh
-      - uses: actions/upload-artifact@v4
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates
+          cat > /etc/apt/sources.list.d/debian.sources <<'EOF_SOURCES'
+          Types: deb
+          URIs: https://snapshot.debian.org/archive/debian/20261105T143010Z
+          Suites: testing
+          Components: main
+          Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+          Check-Valid-Until: no
+          EOF_SOURCES
+          apt-get update
+          apt-get -y dist-upgrade
+          apt-get install -y --no-install-recommends ruby-dev
+
+      - uses: actions/checkout@v4
         with:
-          name: pinpam-module-${{ matrix.runner }}
-          path: pinpam-module_*.deb
-          if-no-files-found: error
+          persist-credentials: false
+
+      - name: Build package
+        run: ./gh-build.sh
+
+      - name: Install PackageCloud client
+        run: gem install --no-document package_cloud
+
+      - name: Push package
+        env:
+          PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
+        run: package_cloud push nitrux/testing/debian/duke ./pinpam-module_*.deb

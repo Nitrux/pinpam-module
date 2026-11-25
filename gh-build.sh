@@ -5,6 +5,9 @@
 
 set -euo pipefail
 
+apt-get update
+apt-get install -y --no-install-recommends build-essential devscripts equivs fakeroot git
+
 ### Get the upstream asset checksums
 
 repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
@@ -16,6 +19,15 @@ git init -q "$work_dir/source"
 cd "$work_dir/source"
 git fetch --depth=1 https://github.com/RazeLighter777/pinpam.git "$revision"
 git checkout -q --detach "$revision"
+
+### Create packaging directory
 cp -r "$repo_root/debian" .
+
+### Install Dependencies
+mk-build-deps --install --remove --tool 'apt-get -y --no-install-recommends' debian/control
+
+### Build Deb
 dpkg-buildpackage -b -us -uc
+
+### Get the package
 cp "$work_dir"/pinpam-module_*.deb "$repo_root/"
